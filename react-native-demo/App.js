@@ -1,15 +1,17 @@
 import { StatusBar } from 'expo-status-bar';
 import React, {useState} from 'react';
-import { StyleSheet, Text, View, ScrollView,FlatList } from 'react-native';
-import { Navbar } from './src/Navbar'
-import { AddTodo } from './src/AddTodo';
-import { Todo } from './src/Todo';
+import { StyleSheet, Text, View, ScrollView,FlatList , Alert} from 'react-native';
+import { Navbar } from './src/components/Navbar'
+import { MainScreen } from './src/screens/MainScreen';
+import { TodoScreen } from './src/screens/TodoScreen';
  
 
 export default function App() {
+
+  const [todoId, setTodoId] = useState('2')
   const [todos,setTodos] = useState([
-    // {id: 1, title: 'test1'},
-    // {id: 2, title: 'test2'},
+     {id: '1', title: 'Выучить React Native'},
+      {id: '2', title: 'Написать приложение'},
     // {id: 3, title: 'test3'},
     // {id: 4, title: 'test4'},
     // {id: 5, title: 'test5'},
@@ -23,6 +25,7 @@ export default function App() {
     // }
 
     //setTodos(todos.concat([ newTodo]))
+
   //   setTodos((prevTodos) => {
   //       return[
   //         ...prevTodos,
@@ -31,35 +34,57 @@ export default function App() {
   //   })
   // 
 
-  setTodos(prev => [...prev,{
-    id: Date.now().toString(),
-    title: title
-  }])
-}
+    setTodos(prev => [...prev,{
+      id: Date.now().toString(),
+      title: title
+    }])
+  }
+  const removeTodo = id => {
+    const todo = todos.find(t => t.id === id)
+    Alert.alert(
+      'Удаление элементов',
+      `Вы уверены, что хотите удалить "${todo.title}"?`,
+      [
+        {
+          text: 'Отмена',
+          style: 'cancel'
+        },
+        { text: 'Удалить', 
+          onPress: () => {
+            setTodoId(null)
+            setTodos(prev => prev.filter(todo => todo.id !== id))
+          }
+        }
+      ],
+      { cancelable: false }
+    );
+   
+  }
+
+  let content = (
+    <MainScreen 
+    todos={todos} 
+    addTodo={addTodo} 
+    removeTodo={removeTodo} 
+    openTodo={setTodoId}
+    //openTodo={(id) => {setTodoId(id)}}
+    />
+  )
+  if (todoId) {
+    const selectedTodo = todos.find(todo => todo.id === todoId)
+      content = <TodoScreen 
+      onRemove={removeTodo} 
+      goBack={ ()=>{setTodoId(null)}} 
+      todo={selectedTodo}/>
+  }
 
 
-const removeTodo = id => {
-  setTodos(prev => prev.filter(todo => todo.id !== id))
-}
 
   return (
     <View>
       <Navbar title="Todo App"/>
       <View style={styles.container}>
-        <AddTodo onSubmit={addTodo}/>
-        <FlatList
-        keyExtractor={item => item.id.toString()}
-        data = {todos}
-        renderItem={({item}) => (
-          <Todo todo = {item} onRemove={removeTodo}/>
-        )}
-        />
-        {/* Первый способ
-        <View>
-            { todos.map(todo => (
-              <Todo todo = {todo} key = {todo.id}/>
-            )) }
-        </View> */}
+         {content}
       </View>
     </View>
   );
