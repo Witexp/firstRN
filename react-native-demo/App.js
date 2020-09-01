@@ -1,14 +1,12 @@
-import { StatusBar } from 'expo-status-bar';
-import React, {useState} from 'react';
-import { StyleSheet,  View, ScrollView,FlatList , Alert} from 'react-native';
+import React, { useState } from 'react'
+import { StyleSheet, View, Alert } from 'react-native'
 import * as Font from 'expo-font'
-import {AppLoading} from 'expo'
+import { AppLoading } from 'expo'
 
-import { Navbar } from './src/components/Navbar'
-import { MainScreen } from './src/screens/MainScreen';
-import { TodoScreen } from './src/screens/TodoScreen';
-import { THEME } from './src/theme';
- 
+import { TodoState } from './src/context/todo/TodoState'
+import { ScreenState } from './src/context/screen/ScreenState'
+import { MainLayout } from './src/MainLayout'
+
 async function loadApplication() {
   await Font.loadAsync({
     'roboto-regular': require('./assets/fonts/Roboto-Regular.ttf'),
@@ -19,117 +17,21 @@ async function loadApplication() {
 export default function App() {
   const [isReady, setIsReady] = useState(false)
 
-
-  const [todoId, setTodoId] = useState(null)
-  const [todos,setTodos] = useState([
-    //  {id: '1', title: 'Выучить React Native'},
-    //   {id: '2', title: 'Написать приложение'},
-    // {id: 3, title: 'test3'},
-    // {id: 4, title: 'test4'},
-    // {id: 5, title: 'test5'},
-    // {id: 6, title: 'test6'},
-  ])
-
   if (!isReady) {
     return (
-    <AppLoading 
-    startAsync={loadApplication} 
-    onError={err=> console.log(err)}
-    onFinish={() => setIsReady(true)}
-    />
+      <AppLoading
+        startAsync={loadApplication}
+        onError={err => console.log(err)}
+        onFinish={() => setIsReady(true)}
+      />
     )
   }
 
-  const addTodo = (title) => {
-    // const newTodo ={
-    //   id: Date.now().toString(),
-    //   title: title
-    // }
-
-    //setTodos(todos.concat([ newTodo]))
-
-  //   setTodos((prevTodos) => {
-  //       return[
-  //         ...prevTodos,
-  //         newTodo
-  //       ]
-  //   })
-  // 
-
-    setTodos(prev => [...prev,{
-      id: Date.now().toString(),
-      title: title
-    }])
-  }
-  const removeTodo = id => {
-    const todo = todos.find(t => t.id === id)
-    Alert.alert(
-      'Удаление элементов',
-      `Вы уверены, что хотите удалить "${todo.title}"?`,
-      [
-        {
-          text: 'Отмена',
-          style: 'cancel'
-        },
-        { text: 'Удалить', 
-          onPress: () => {
-            setTodoId(null)
-            setTodos(prev => prev.filter(todo => todo.id !== id))
-          }
-        }
-      ],
-      { cancelable: false }
-    );
-   
-  }
-
-  const updateTodo = (id, title) => {
-    setTodos(old => old.map(todo => {
-      if (todo.id === id){
-        todo.title = title
-      }
-      return todo
-    }))
-  }
-
-  let content = (
-    <MainScreen 
-    todos={todos} 
-    addTodo={addTodo} 
-    removeTodo={removeTodo} 
-    openTodo={setTodoId}
-    //openTodo={(id) => {setTodoId(id)}}
-    />
-  )
-  if (todoId) {
-    const selectedTodo = todos.find(todo => todo.id === todoId)
-      content = (
-      <TodoScreen 
-      onRemove={removeTodo} 
-      goBack={ ()=>{setTodoId(null)}} 
-      todo={selectedTodo}
-      onSave={updateTodo}
-      />
-      )
-  }
-
-
-
   return (
-    <View>
-      <Navbar title="Todo App"/>
-      <View style={styles.container}>
-         {content}
-      </View>
-    </View>
-  );
+    <ScreenState>
+      <TodoState>
+        <MainLayout />
+      </TodoState>
+    </ScreenState>
+  )
 }
-
-//
-
-const styles = StyleSheet.create({
-  container: {
-    paddingHorizontal: THEME.PADDING_HORIZONTAL,
-    paddingVertical: 20,
-  }
-});
